@@ -1,22 +1,21 @@
 FROM debian:latest
 
-RUN apt update && apt upgrade -y
+RUN set -xe; \
+    apt-get -yqq update; \
+    apt-get install -y cmake build-essential libz-dev libssl-dev libbz2-dev libpng-dev libusb-dev \
+    ;
 
-RUN apt install -y git cmake build-essential libz-dev libssl-dev libbz2-dev libpng-dev libusb-dev
-
-RUN git clone https://github.com/malus-security/xpwn.git
-
+COPY . /xpwn
 WORKDIR /xpwn
 
-RUN git checkout testing
-
 RUN mkdir builddir
-
 WORKDIR /xpwn/builddir
 
 RUN cmake ..
 RUN make
 
 WORKDIR /
+
+CMD [ "sh", "-c", "/xpwn/builddir/ipsw-patch/xpwntool /in /out -iv ${IV} -k ${KEY} -decrypt" ]
 
 ENTRYPOINT [ "/xpwn/builddir/ipsw-patch/xpwntool" ]
